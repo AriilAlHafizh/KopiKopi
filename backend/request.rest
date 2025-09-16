@@ -1,0 +1,30 @@
+POST http://localhost:5000/users
+Content-Type: application/json
+
+{
+    "name": "admin",
+    "email": "admin@gmail.com",
+    "alamat":"alamat123",
+    "no_tlp":"081911260105",
+    "password":"password",
+    "confPassword":"password",
+    "role": "admin"
+}
+
+
+###
+//Nyoba Login
+POST http://localhost:5000/login
+Content-Type: application/json
+
+{
+    "email": "seller@gmail.com",
+    "password":"password"
+}
+
+###
+// lihat siapa yang login
+GET http://localhost:5000/me
+
+###
+DELETE http://localhost:5000/logOut
