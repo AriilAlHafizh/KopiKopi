@@ -18,7 +18,7 @@ POST http://localhost:5000/login
 Content-Type: application/json
 
 {
-    "email": "seller@gmail.com",
+    "email": "buyer@gmail.com",
     "password":"password"
 }
 
@@ -28,3 +28,16 @@ GET http://localhost:5000/me
 
 ###
 DELETE http://localhost:5000/logOut
+###
+POST http://localhost:5000/product
+Content-Type: application/json
+
+{
+    "name": "Produk Luwak",
+    "jenis": "Tai Luwak",
+    "harga": 700
+
+
+}
+###
+GET http://localhost:5000/product

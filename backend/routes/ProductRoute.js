@@ -1,4 +1,5 @@
 import express from "express";
+import { verifyUser } from "../middleware/AuthUser.js";
 import {
     getProduct,
     getProductById,
@@ -9,10 +10,10 @@ import {
 
 const router = express.Router();
 
-router.get('/Products', getProduct);
-router.get('/Products/:id', getProductById);
-router.post('/Products', createProduct);
-router.patch('/Products:id', updateProduct);
-router.delete('/Products', deleteProduct);
+router.get('/product', verifyUser, getProduct);
+router.get('/product/:id',  verifyUser, getProductById);
+router.post('/product',  verifyUser, createProduct);
+router.patch('/product:id',  verifyUser, updateProduct);
+router.delete('/product',  verifyUser, deleteProduct);
 
 export default router;
