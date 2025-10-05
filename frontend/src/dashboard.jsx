@@ -121,10 +121,10 @@ export default function Dashboard() {
                         {/* 2. Menu Navigasi (tetap rapi di tengah) */}
                         <div className="hidden md:flex space-x-8 text-base font-medium ml-16 ">
                             <Link to="/" className="hover:text-yellow-400 transition">Home</Link>
-                            <a href="#" className="hover:text-yellow-400 transition">About Us</a>
-                            <a href="#" className="hover:text-yellow-400 transition">Shop</a>
-                            <a href="#" className="hover:text-yellow-400 transition">Blog</a>
-                            <a href="#" className="hover:text-yellow-400 transition">Contact Us</a>
+                            <Link to="/About" className="hover:text-yellow-400 transition">About Us</Link>
+                            <Link to="/Shop" className="hover:text-yellow-400 transition">Shop</Link>
+                            <Link to="/Blog" className="hover:text-yellow-400 transition">Blog</Link>
+                            <Link to="/Contact" className="hover:text-yellow-400 transition">Contact Us</Link>
                         </div>
 
                         <div className="flex items-center space-x-2">
