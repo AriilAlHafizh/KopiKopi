@@ -1,23 +1,20 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Link } from 'react-router-dom'; // Diperlukan untuk navigasi di navbar
+import React from 'react';
 import { motion } from 'framer-motion';
+import Navbar from './components/Navbar.jsx'; // 1. IMPORT KOMPONEN NAVBAR
+import { Link } from 'react-router-dom'; // Import Link
 
-// --- Placeholder/Komponen Pembantu (Sesuai Kebutuhan) ---
-// Ikon Placeholder untuk Footer (misalnya, Facebook)
+// --- Komponen Pembantu ---
 const FacebookIcon = (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 hover:text-white transition">
         <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
     </svg>
 );
-// Ikon Placeholder untuk Metode Proses Kopi (misalnya, Wash Process)
 const WaterDropIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500 mx-auto">
         <path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8z"></path>
         <path d="M12 16a4 4 0 0 0 4-4c0-2-4-6-4-6s-4 4-4 6a4 4 0 0 0 4 4z"></path>
     </svg>
 );
-// -----------------------------------------------------------------------------
-
 
 const categories = [
     { name: 'ROBUSTA', desc: 'cita rasa kuat, pahit khas, dengan body tebal dan kandungan kafein lebih tinggi. Cocok untuk pecinta kopi berkarakter bold.', color: 'bg-green-800', img: 'bgdashboard.jpg' },
@@ -33,7 +30,6 @@ const processes = [
     { name: 'GILING BASAH', desc: 'Body tebal, earthy', desc2: 'pecinta kopi tubruk atau espresso pekat.', icon: WaterDropIcon, color: 'bg-[#E9D9CF]' },
 ];
 
-// --- Komponen Pembantu ---
 const CategoryCard = ({ name, desc, color, img }) => (
     <motion.div
         className={`rounded-xl shadow-lg p-4 h-full relative overflow-hidden text-white ${color}`}
@@ -70,24 +66,21 @@ const NewsCard = ({ type, img }) => (
                 />
             </div>
         </div>
-        {/* Konten Teks di bawah gambar */}
         <div className="p-6 flex flex-col pt-1">
             <h4 className="text-xl font-extrabold text-gray-900 mb-2 leading-snug uppercase">
                 EXCELSIA
             </h4>
-            {/* Deskripsi utama */}
             <p className="text-sm text-gray-900 mb-6">
                 Rasa asam segar dengan sentuhan fruity & spicy. Cocok untuk pencinta kopi yang ingin pengalaman rasa berbeda.
             </p>
-            {/* Link diubah agar terlihat seperti di gambar referensi */}
             <div className="flex items-center space-x-2 font-bold text-gray-900 hover:text-yellow-800 transition">
                 <p className="text-base">Selengkapnya</p>
-                {/* SVG Panah */}
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
             </div>
         </div>
     </motion.div>
 );
+
 
 export default function Dashboard() {
     const heroBg = "url('/src/assets/image/bgdashboard.jpg')";
@@ -97,68 +90,17 @@ export default function Dashboard() {
     return (
         <div className="bg-[#F9F6EE] font-sans min-h-screen overflow-hidden">
 
-            {/* Bagian 1: Hero Section (NAVBAR TERINTEGRASI) */}
+            {/* Bagian 1: Hero Section */}
             <div
                 className="h-[100vh] flex flex-col bg-cover bg-center relative"
                 style={{ backgroundImage: heroBg }}
             >
-                {/* 1. Lapisan Gelap Tipis */}
                 <div className="absolute inset-0 bg-black/40"></div>
+                
+                {/* 2. Panggil Komponen Navbar di sini */}
+                <Navbar variant="transparent" />
 
-                {/* 2. Navigasi (Ditempatkan di dalam Hero) */}
-                <header className="relative z-20 w-full">
-                    <nav className="max-w-7xl mx-auto py-4 flex justify-between items-center text-white">
-
-                        {/* 1. Logo */}
-                        <Link to="/"> {/* Bungkus gambar dengan Link jika logo berfungsi sebagai link ke homepage */}
-                            <img
-                                src="/src/assets/image/LOGO.png" // 👈 PASTIKAN PATH INI BENAR!
-                                alt="Hafizh Kopi Logo"
-                                className="h-10" // Atur tinggi gambar sesuai kebutuhan
-                            />
-                        </Link>
-
-                        {/* 2. Menu Navigasi (tetap rapi di tengah) */}
-                        <div className="hidden md:flex space-x-8 text-base font-medium ml-16 ">
-                            <Link to="/" className="hover:text-yellow-400 transition">Home</Link>
-                            <Link to="/About" className="hover:text-yellow-400 transition">About Us</Link>
-                            <Link to="/Shop" className="hover:text-yellow-400 transition">Shop</Link>
-                            <Link to="/Blog" className="hover:text-yellow-400 transition">Blog</Link>
-                            <Link to="/Contact" className="hover:text-yellow-400 transition">Contact Us</Link>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-
-                            {/* Kotak Pencarian (Input Putih & Tombol Hitam) */}
-                            <div className="flex items-center">
-                                <input
-                                    type="text"
-                                    placeholder="Cari kopi.."
-                                    // 👈 Input PUTIH dengan sudut melengkung di kiri
-                                    className="px-4 py-2 w-36 sm:w-35 text-gray-900 bg-white rounded-l-xl focus:outline-none text-sm"
-                                />
-                                {/* Tombol Pencarian */}
-                                <button
-                                    // 👈 Tombol HITAM dengan sudut melengkung di kanan
-                                    className="bg-black text-white px-3 py-2 rounded-r-xl h-full hover:bg-gray-800 transition"
-                                >
-                                    {/* SVG Ikon Kaca Pembesar */}
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                                </button>
-                            </div>
-
-                            {/* Tombol Login */}
-                            <Link
-                                to="/login"
-                                className="bg-[#A0583C] text-white font-semibold py-2 px-6 rounded-xl shadow-lg hover:bg-amber-700 transition"
-                            >
-                                Login
-                            </Link>
-                        </div>
-                    </nav>
-                </header>
-
-                {/* 3. Konten Utama Hero (Teks & Tombol) */}
+                {/* 3. Konten Utama Hero */}
                 <motion.div
                     className="flex-grow flex items-center justify-center relative z-10 text-center text-white pb-10"
                     initial={{ opacity: 0, y: 50 }}
@@ -168,11 +110,7 @@ export default function Dashboard() {
                     <div>
                         <h2 className="text-5xl font-extrabold mb-3 tracking-tight text-[#FFFADA]">Cari Kopi Terbaik Anda</h2>
                         <p className="text-lg mb-6 text-[#CCB9B1]">Mulai Hari dengan Biji Kopi Terbaik</p>
-
-                        {/* ⚠️ TOMBOL MULAI DIUBAH WARNANYA ⚠️ */}
                         <button
-                            // Menggunakan warna kustom #B27F5A (sesuai visual)
-                            // Meningkatkan padding untuk meniru ukuran pada gambar
                             className="bg-[#B27F5A] text-white font-semibold py-4 px-12 rounded-full shadow-lg hover:bg-[#A36C4D] transition transform hover:scale-105 text-lg"
                         >
                             Mulai
@@ -180,7 +118,6 @@ export default function Dashboard() {
                     </div>
                 </motion.div>
             </div>
-            {/* --- */}
 
             {/* Bagian 2: Shop By Category */}
             <section className="py-16 max-w-7xl mx-auto px-6">
@@ -191,7 +128,6 @@ export default function Dashboard() {
                     ))}
                 </div>
             </section>
-            {/* --- */}
 
             {/* Bagian 3: Metode Proses Kopi */}
             <section className="py-16 max-w-7xl mx-auto px-6">
@@ -214,21 +150,16 @@ export default function Dashboard() {
                     ))}
                 </div>
             </section>
-            {/* --- */}
 
-            {/* Bagian 4: Berita Perkopiian (dengan Latar Belakang Cokelat) */}
+            {/* Bagian 4: Berita Perkopiian */}
             <section
                 className="py-32 relative overflow-hidden bg-cover bg-center"
                 style={{ backgroundImage: blogBg }}
             >
-                <div className="max-w-6xl mx-auto px-6 relative z-10"> {/* max-w-7xl diubah menjadi max-w-6xl */}
-
+                <div className="max-w-6xl mx-auto px-6 relative z-10">
                     <div className="relative z-20">
-                        {/* ⚠️ PERUBAHAN MARGIN ⚠️ */}
                         <h3 className="text-3xl font-bold text-center -mt-14 mb-30 text-white">Berita Perkopiian</h3>
-                        {/* ^^^^^^^^^ DIUBAH DARI mb-10 MENJADI mb-20 */}
                         <div className="grid md:grid-cols-3 gap-6">
-                            {/* Catatan: NewsCard di dalamnya tetap bg-white, ini bagus untuk kontras */}
                             <NewsCard type="EXCELSA" img="/src/assets/image/berita.jpg" />
                             <NewsCard type="ARABICA" img="/src/assets/image/berita.jpg" />
                             <NewsCard type="ROBUSTA" img="/src/assets/image/berita.jpg" />
@@ -236,52 +167,41 @@ export default function Dashboard() {
                     </div>
                 </div>
             </section>
-            {/* --- */}
 
             {/* Bagian 5: Call to Action (CTA) */}
             <section className="relative py-20 flex justify-center w-full">
-                {/* Kontainer Kartu Modal */}
                 <motion.div
                     className="relative py-16 px-6 sm:px-16 w-full max-w-6xl rounded-3xl overflow-hidden shadow-2xl bg-cover bg-center"
-                    style={{ backgroundImage: ctaBg }} // Menggunakan gambar background yang baru
+                    style={{ backgroundImage: ctaBg }}
                     initial={{ scale: 0.9, opacity: 0 }}
                     whileInView={{ scale: 1, opacity: 1 }}
                     viewport={{ once: true, amount: 0.5 }}
                     transition={{ duration: 0.6 }}
                 >
-                    {/* Lapisan Gelap di dalam Kartu - DITAMBAH KEMBALI agar teks terlihat jelas di atas gambar */}
                     <div className="absolute inset-0"></div>
-
-                    {/* Konten Teks dan Tombol */}
-                    {/* Menggunakan shadow teks agar lebih terlihat jelas */}
                     <div className="relative z-10 text-center">
-                        <h3 className="text-4xl text-black  text-shadow-md font-extrabold mb-3 tracking-tight">
+                        <h3 className="text-4xl text-black text-shadow-md font-extrabold mb-3 tracking-tight">
                             Ayo Mulai Nikmati Dari Kamu!
                         </h3>
                         <p className="text-lg text-[#302A2A] mb-8 max-w-xl mx-auto">
                             Bergabunglah dengan ribuan pelanggan yang telah merasakan kelezatan kopi premium kami
                         </p>
-                        {/* Tombol Selengkapnya (dengan warna kustom yang baru) */}
                         <button className="bg-[#B27F5A] text-white font-semibold py-3 px-10 rounded-xl shadow-xl hover:bg-[#A36C4D] transition transform hover:scale-105">
                             Selengkapnya
                         </button>
                     </div>
                 </motion.div>
             </section>
-            {/* --- */}
-
-            {/* Bagian 6: Footer */}
+            
             <footer className="bg-[#8D6E63] text-gray-300 py-12">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
-                        {/* Kolom 1: Logo & Kontak */}
                         <div>
                             <h4 className="text-xl font-bold text-white mb-4">Hafizh Kopi</h4>
                             <p className="text-sm mb-3">Jl. Diponegoro, Citarum, Kec. Bandung Wetan, Kota Bandung, Jawa Barat 40115</p>
                             <p className="text-sm">hafizhkopi@gmail.com</p>
                             <div className="flex space-x-4 mt-4">
                                 <FacebookIcon />
-                                {/* ... ikon sosial lainnya ... */}
                             </div>
                         </div>
 
@@ -297,7 +217,6 @@ export default function Dashboard() {
                             </div>
                         ))}
 
-                        {/* Kolom 2, 3, 4, 5: Link Cepat */}
                         {['METHOD'].map((title) => (
                             <div key={title}>
                                 <h5 className="text-sm font-semibold text-white mb-4">{title}</h5>
@@ -338,7 +257,6 @@ export default function Dashboard() {
                         ))}
                     </div>
 
-                    {/* Sub Footer - Subscribe & Copyright */}
                     <div className="border-t border-gray-600 mt-10 pt-6 text-center">
                         <p className="text-sm mb-4">SIGN UP & GET <span className="text-yellow-500 font-bold">20% OFF</span> FOR YOUR FIRST ORDER</p>
                         <div className="flex justify-center mb-6">

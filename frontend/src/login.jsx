@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from './context/AuthContext.jsx';
+import api from './api';
 
-// --- Komponen Ikon Lokal (Pengganti lucide-react agar berjalan dalam satu file) ---
+// --- Komponen Ikon Lokal ---
 const Eye = ({ size = 20 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
 );
@@ -13,21 +15,38 @@ const EyeOff = ({ size = 20 }) => (
 
 
 export default function Login() {
-  // Mengganti nilai default agar field input kosong saat dimuat
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login submitted', { email, password, rememberMe });
-    // TODO: Tambahkan logika autentikasi di sini
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await api.post('/login', { email, password });
+      login(response.data, navigate);
+
+    } catch (err) {
+      if (err.response && err.response.data.msg) {
+        setError(err.response.data.msg);
+      } else {
+        setError('Tidak dapat terhubung ke server. Silakan coba lagi.');
+        console.error("Login error:", err);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    // KONTANER UTAMA: Menggunakan h-screen (bukan min-h) dan flex-row untuk memastikan 
-    // tinggi mutlak 100% dari viewport dan mencegah scrolling yang tidak perlu.
     <div
       className="h-screen flex overflow-hidden bg-cover bg-center"
       style={{
@@ -36,18 +55,14 @@ export default function Login() {
         backgroundSize: 'cover'
       }}
     >
-
-      {/* 1. KIRI: Konten Informasi (w-1/2, memiliki lapisan gelap) */}
+      {/* KIRI: Konten Informasi */}
       <motion.div
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
-        // Menggunakan h-full untuk mengisi tinggi kontainer induk (h-screen)
         className="w-1/2 relative flex h-full bg-black/50"
       >
-
         <div className="relative z-10 flex flex-col p-16 text-white w-full h-full">
-          {/* Logo di atas */}
           <div className="flex items-center gap-3 mb-auto">
             <Link to="/">
               <img
@@ -57,9 +72,6 @@ export default function Login() {
               />
             </Link>
           </div>
-
-
-          {/* Slide Content di bawah */}
           <div className="mb-24 max-w-xl">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
@@ -75,10 +87,8 @@ export default function Login() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="text-lg text-gray-300 leading-relaxed"
             >
-              Setiap biji kopi yang kami seduh adalah hasil panen terbaik dari petani lokal pilihan, membawa cita rasa autentik dan cerita kekayaan alam Indonesia.
+              Setiap biji kopi yang kami seduh adalah hasil panen terbaik dari petani lokal pilihan.
             </motion.p>
-
-            {/* Pagination Dots */}
             <div className="flex gap-3 mt-10">
               <div className="w-12 h-1.5 bg-white rounded-full shadow"></div>
               <div className="w-12 h-1.5 bg-white/30 rounded-full"></div>
@@ -88,7 +98,7 @@ export default function Login() {
         </div>
       </motion.div>
 
-      {/*kanan*/}
+      {/* KANAN: Form Login */}
       <div className="w-1/2 flex items-center justify-center px-8 py-10 h-full">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -96,19 +106,21 @@ export default function Login() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="bg-white p-10 md:p-9 rounded-3xl shadow-2xl w-full max-w-md"
         >
-          {/* Header */}
           <div className="text-center mb-6">
-            <p className="text-xs font-semibold text-gray-500 tracking-widest mb-2">WELCOME BACK</p> {/* Mengurangi mb-3 menjadi mb-2 */}
+            <p className="text-xs font-semibold text-gray-500 tracking-widest mb-2">WELCOME BACK</p>
             <h2 className="text-3xl font-bold text-gray-900">Log In to your Account</h2>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5"> {/* space-y-6 diubah menjadi space-y-5 */}
-            {/* Email Input */}
+          {/* === 1. PERUBAHAN: TAMPILKAN ERROR DI SINI === */}
+          {error && (
+            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-md" role="alert">
+              <p>{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2"> {/* Mengurangi mb-2.5 menjadi mb-2 */}
-                Email
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
               <input
                 type="email"
                 value={email}
@@ -117,12 +129,8 @@ export default function Login() {
                 required
               />
             </div>
-
-            {/* Password Input */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2"> {/* Mengurangi mb-2.5 menjadi mb-2 */}
-                Password
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -140,8 +148,6 @@ export default function Login() {
                 </button>
               </div>
             </div>
-
-            {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between pt-1">
               <label className="flex items-center gap-2.5 cursor-pointer group">
                 <div className="relative">
@@ -159,33 +165,26 @@ export default function Login() {
               </button>
             </div>
 
-            {/* Continue Button */}
+            {/* === 2. PERUBAHAN: TOMBOL DINAMIS === */}
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               type="submit"
-              className="w-full bg-gray-900 text-white py-4 rounded-xl font-semibold hover:bg-gray-800 transition shadow-lg mt-6 tracking-wide"
-            > {/* Mengurangi mt-8 menjadi mt-6 */}
-              CONTINUE
+              disabled={isLoading}
+              className="w-full bg-gray-900 text-white py-4 rounded-xl font-semibold hover:bg-gray-800 transition shadow-lg mt-6 tracking-wide disabled:bg-gray-500 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'MEMPROSES...' : 'CONTINUE'}
             </motion.button>
           </form>
 
-          {/* Divider */}
-          <div className="flex items-center gap-4 my-6"> {/* Mengurangi my-8 menjadi my-6 */}
+          {/* ... Sisa JSX Anda ... */}
+          <div className="flex items-center gap-4 my-6">
             <div className="flex-1 border-t border-gray-300"></div>
             <span className="text-sm text-gray-500 font-medium">Or</span>
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
-
-          {/* Social Login Buttons */}
-          <div className="space-y-3"> {/* space-y-3.5 diubah menjadi space-y-3 */}
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              type="button"
-              className="w-full flex items-center justify-center gap-3 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition"
-            > {/* py-3.5 diubah menjadi py-3 */}
-              {/* SVG Google */}
+          <div className="space-y-3">
+            <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} type="button" className="w-full flex items-center justify-center gap-3 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition">
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -194,22 +193,7 @@ export default function Login() {
               </svg>
               <span className="text-sm font-medium text-gray-700">Log In with Google</span>
             </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              type="button"
-              className="w-full flex items-center justify-center gap-3 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition"
-            > {/* py-3.5 diubah menjadi py-3 */}
-              {/* SVG Facebook */}
-              <svg className="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-              </svg>
-              <span className="text-sm font-medium text-gray-700">Log In with Facebook</span>
-            </motion.button>
           </div>
-
-          {/* Sign Up Link */}
           <p className="text-center text-sm text-gray-600 mt-6 pt-2">
             New User?{' '}
             <Link to="/signup" className="font-bold text-gray-900 hover:underline">
