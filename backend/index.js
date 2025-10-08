@@ -18,9 +18,9 @@ const store = new sessionStore({
 });
 
 // uncommoment kalau ada tabel database baru
-// (async()=>{
-//     await db.sync();
-// })();
+ (async()=>{
+     await db.sync();
+})();
 
 try{
     await db.authenticate();

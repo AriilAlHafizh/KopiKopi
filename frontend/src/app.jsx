@@ -7,9 +7,10 @@ import About from './about.jsx';
 import Shop from './shop.jsx';
 import Blog from './blog.jsx';
 import Contact from './contact.jsx';
-import Admin from './admindashboard.jsx';
 import Produk from './produk.jsx';
-import AdminDashboard from './admin/dashboard';
+import AdminPengguna from './admin/user/UserList.jsx';
+import AdminProduk from './admin/produk/ProduksList.jsx';
+import AdminDashboard from './admin/dashboard.jsx';
 import SellerDashboard from './seller/dashboard';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
@@ -23,6 +24,8 @@ export default function App() {
       
       <Route element={<ProtectedRoute />}>
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/user/UserList" element={<AdminPengguna />} />
+        <Route path="/admin/produk" element={<AdminProduk />} />
         <Route path="/seller/dashboard" element={<SellerDashboard />} />
         <Route path="/about" element={<About />} />
         <Route path="/shop" element={<Shop />} />
