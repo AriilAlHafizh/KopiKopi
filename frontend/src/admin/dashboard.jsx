@@ -41,7 +41,7 @@ export default function AdminDashboard() {
         <nav className="flex-1 px-4 py-6 space-y-2 text-sm">
           {[
             { name: "Dashboard", path: "/admin/dashboard", icon: "📊" },
-            { name: "Pengguna", path: "/admin/user/UserList", icon: "👥" },
+            { name: "Pengguna", path: "/admin/usertable/UserList", icon: "👥" },
             { name: "Produk Kopi", path: "/admin/produk", icon: "☕" },
             { name: "Pelanggan", path: "/admin/pelanggan", icon: "🛍️" },
             { name: "Promosi", path: "/admin/promosi", icon: "📢" },

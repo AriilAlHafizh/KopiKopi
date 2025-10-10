@@ -1,5 +1,3 @@
-// Di dalam file AuthContext.jsx
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import api from '../api'; // Pastikan path ini benar
 

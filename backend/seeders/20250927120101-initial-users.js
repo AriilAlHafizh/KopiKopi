@@ -12,7 +12,7 @@ export default {
 
     await queryInterface.bulkInsert('users', [
       {
-        uuid: uuidv4(),
+        //uuid: uuidv4(),
         name: 'Admin Utama',
         email: 'admin@gmail.com',
         alamat: 'Jl. Kantor Pusat No. 1',
@@ -23,7 +23,7 @@ export default {
         updatedAt: new Date()
       },
       {
-        uuid: uuidv4(),
+        //uuid: uuidv4(),
         name: 'Seller Contoh',
         email: 'seller@gmail.com',
         alamat: 'Jl. Toko No. 2',
@@ -34,7 +34,7 @@ export default {
         updatedAt: new Date()
       },
       {
-        uuid: uuidv4(),
+        //uuid: uuidv4(),
         name: 'Buyer Contoh',
         email: 'buyer@gmail.com',
         alamat: 'Jl. Rumah No. 3',
