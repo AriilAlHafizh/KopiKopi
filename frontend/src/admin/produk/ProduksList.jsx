@@ -1,24 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
-import Sidebar from "../../components/SidebarAdmin";
+import Sidebar from "../../components/SidebarAdmin"; // Sesuaikan path
 
 export default function AdminProduk() {
-  const { user, logout } = useAuth(); // ambil data user dari context
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
-  const [sellers, setSellers] = useState([]); // daftar seller untuk dropdown
+  const [sellers, setSellers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+
+  // State untuk form: foto sekarang dipegang sebagai objek File/String
   const [formData, setFormData] = useState({
     name: "",
     jenis: "",
     harga: "",
     deskripsi: "",
-    foto: "",
-    userId: "", // <-- untuk menyimpan seller yang dipilih (admin)
+    foto: null, 
+    userId: "",
   });
 
   const handleLogout = async () => {
@@ -26,28 +28,16 @@ export default function AdminProduk() {
     navigate("/login");
   };
 
-  const menuItems = [
-    { name: "Dashboard", path: "/admin/dashboard", icon: "📊" },
-    { name: "Pengguna", path: "/admin/usertable/UserList", icon: "👥" },
-    { name: "Produk Kopi", path: "/admin/produk/ProduksList", icon: "☕" },
-    { name: "Pelanggan", path: "/admin/pelanggan", icon: "🛍️" },
-    { name: "Promosi", path: "/admin/promosi", icon: "📢" },
-    { name: "Pengaturan", path: "/admin/pengaturan", icon: "⚙️" },
-  ];
-
-  // 🔹 Ambil data produk + daftar seller dari backend
+  // 🔹 Fetch Data Produk dan Seller
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        // ambil produk dan users secara paralel
         const [prodRes, usersRes] = await Promise.all([
           axios.get("http://localhost:5000/products", { withCredentials: true }),
           axios.get("http://localhost:5000/users", { withCredentials: true }),
         ]);
 
         setProducts(prodRes.data || []);
-
-        // filter hanya role seller
         const sellerList = (usersRes.data || []).filter((u) => u.role === "seller");
         setSellers(sellerList);
       } catch (err) {
@@ -56,38 +46,45 @@ export default function AdminProduk() {
         setLoading(false);
       }
     };
-
     fetchAll();
   }, []);
 
-  // 🔹 Simpan perubahan (tambah/edit)
+  // 🔹 Simpan perubahan (tambah/edit) - MENGGUNAKAN FormData
   const handleSave = async () => {
     try {
-      // Tentukan userId owner produk:
-      // - Jika admin: gunakan userId yang dipilih di form (formData.userId). Jika kosong, fallback ke user.id (aman).
-      // - Jika seller: gunakan user.id (yang login).
       const ownerId =
         user?.role === "admin"
           ? formData.userId || (editingProduct?.userId ?? user?.id)
           : user?.id;
 
-      const productData = {
-        name: formData.name,
-        jenis: formData.jenis,
-        harga: formData.harga,
-        deskripsi: formData.deskripsi,
-        foto: formData.foto,
-        userId: ownerId,
-      };
+      // ⭐ Perubahan Utama: Gunakan FormData untuk mengirim file
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("jenis", formData.jenis);
+      data.append("harga", formData.harga);
+      data.append("deskripsi", formData.deskripsi);
+      data.append("userId", ownerId);
+
+      // Hanya tambahkan foto jika ada objek File baru yang dipilih (bukan string URL lama)
+      if (formData.foto instanceof File) {
+        data.append("foto", formData.foto);
+      }
+
 
       if (editingProduct) {
+        // Edit produk (PUT/PATCH)
         await axios.put(
           `http://localhost:5000/products/${editingProduct.id}`,
-          productData,
-          { withCredentials: true }
+          data, // Mengirim FormData
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+            withCredentials: true
+          }
         );
       } else {
-        await axios.post("http://localhost:5000/products", productData, {
+        // Tambah produk baru (POST)
+        await axios.post("http://localhost:5000/products", data, {
+          headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
         });
       }
@@ -95,20 +92,20 @@ export default function AdminProduk() {
       setShowModal(false);
       setEditingProduct(null);
 
-      // refresh data: panggil ulang produk tanpa reload halaman
+      // Refresh data
       setLoading(true);
       const res = await axios.get("http://localhost:5000/products", { withCredentials: true });
       setProducts(res.data || []);
       setLoading(false);
     } catch (err) {
       console.error("Gagal menyimpan produk:", err.response?.data || err.message);
-      // opsional: beri tahu user
       alert(`Gagal menyimpan: ${err.response?.data?.msg || err.message}`);
     }
   };
 
-  // 🔹 Hapus produk
+  // 🔹 Hapus produk (handleDelete tetap sama)
   const handleDelete = async (id) => {
+    // ... (kode tetap sama)
     if (window.confirm("Yakin ingin menghapus produk ini?")) {
       try {
         await axios.delete(`http://localhost:5000/products/${id}`, {
@@ -127,14 +124,13 @@ export default function AdminProduk() {
     setEditingProduct(product);
 
     if (product) {
-      // Jika product memiliki relasi user (Users) atau userId, pasang ke formData dengan aman
       setFormData({
         name: product.name || "",
         jenis: product.jenis || "",
         harga: product.harga || "",
         deskripsi: product.deskripsi || "",
-        foto: product.foto || "",
-        userId: product.userId || product.User?.id || "", // ambil userId dari product
+        foto: null, // **Penting**: Reset foto agar user harus memilih file baru untuk upload
+        userId: product.userId || product.User?.id || "",
       });
     } else {
       setFormData({
@@ -142,7 +138,7 @@ export default function AdminProduk() {
         jenis: "",
         harga: "",
         deskripsi: "",
-        foto: "",
+        foto: null,
         userId: "",
       });
     }
@@ -152,8 +148,8 @@ export default function AdminProduk() {
 
   return (
     <div className="flex h-screen bg-stone-100 font-[Inter]">
-    {/* Ganti seluruh aside dengan ini */}
-    <Sidebar onLogout={handleLogout} />
+      {/* Sidebar */}
+      <Sidebar onLogout={handleLogout} />
 
       {/* KONTEN UTAMA */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -181,7 +177,7 @@ export default function AdminProduk() {
                       <th className="py-3 px-4">Harga</th>
                       <th className="py-3 px-4">Deskripsi</th>
                       <th className="py-3 px-4">Foto</th>
-                      <th className="py-3 px-4">Seller</th>
+                      <th className="py-3 px-4">Seller</th> {/* Kolom Seller di sini */}
                       <th className="py-3 px-4 text-right">Aksi</th>
                     </tr>
                   </thead>
@@ -199,9 +195,10 @@ export default function AdminProduk() {
                           </td>
                           <td className="py-3 px-4">{p.deskripsi}</td>
                           <td className="py-3 px-4">
+                            {/* Menampilkan Foto dengan Base URL */}
                             {p.foto ? (
                               <img
-                                src={p.foto}
+                                src={`http://localhost:5000${p.foto}`}
                                 alt={p.name}
                                 className="w-16 h-16 object-cover rounded-lg"
                               />
@@ -212,8 +209,7 @@ export default function AdminProduk() {
                             )}
                           </td>
                           <td className="py-3 px-4">
-                            {/* tampilkan nama seller jika ada relasi User */}
-                            {p.User?.name || p.sellerName || p.sellerId || "—"}
+                            {sellers.find(s => String(s.id) === String(p.userId))?.name || "—"} 
                           </td>
                           <td className="py-3 px-4 text-right">
                             <button
@@ -255,7 +251,8 @@ export default function AdminProduk() {
             </h3>
 
             <div className="space-y-3">
-              {["name", "jenis", "harga", "deskripsi", "foto"].map((field) => (
+              {/* Input teks biasa */}
+              {["name", "jenis", "harga", "deskripsi"].map((field) => (
                 <input
                   key={field}
                   type={field === "harga" ? "number" : "text"}
@@ -268,9 +265,18 @@ export default function AdminProduk() {
                 />
               ))}
 
-              {/* Jika admin: tampilkan dropdown untuk memilih seller.
-                  Jika bukan admin: tampilkan nama seller readonly */}
-              {user?.role === "admin" ? (
+              {/* Input File untuk Foto */}
+              <input
+                type="file"
+                accept="image/*"
+                className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-indigo-200"
+                onChange={(e) =>
+                  setFormData({ ...formData, foto: e.target.files[0] })
+                }
+              />
+
+              {/* Tampilkan Seller Dropdown hanya untuk Admin */}
+              {user?.role === "admin" && (
                 <select
                   className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-indigo-200"
                   value={formData.userId || ""}
@@ -285,14 +291,6 @@ export default function AdminProduk() {
                     </option>
                   ))}
                 </select>
-              ) : (
-                <input
-                  type="text"
-                  readOnly
-                  value={user?.name || "Tidak diketahui"}
-                  className="w-full border rounded-lg px-3 py-2 bg-gray-100 text-gray-600"
-                  placeholder="Seller"
-                />
               )}
             </div>
 

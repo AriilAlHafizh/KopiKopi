@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { NavLink } from "react-router-dom";
+import { useNavigate, NavLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import SidebarSeller from "../../components/SidebarSeller";
-import { useNavigate } from "react-router-dom";
 
 export default function SellerProduk() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
   const [products, setProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -19,6 +19,7 @@ export default function SellerProduk() {
     foto: null,
   });
 
+  // 🔹 Logout handler
   const handleLogout = async () => {
     await logout();
     navigate("/login");
@@ -50,17 +51,20 @@ export default function SellerProduk() {
       if (formData.foto) data.append("foto", formData.foto);
 
       if (editingProduct) {
+        // Edit produk
         await axios.put(
           `http://localhost:5000/products/${editingProduct.id}`,
           data,
-          { headers: { "Content-Type": "multipart/form-data" },
-           withCredentials: true, 
-        }
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+            withCredentials: true,
+          }
         );
       } else {
+        // Tambah produk baru
         await axios.post("http://localhost:5000/products", data, {
           headers: { "Content-Type": "multipart/form-data" },
-           withCredentials: true,
+          withCredentials: true,
         });
       }
 
@@ -74,21 +78,18 @@ export default function SellerProduk() {
 
   // 🔹 Hapus produk
   const handleDelete = async (id) => {
-  if (window.confirm("Yakin ingin menghapus produk ini?")) {
-    try {
-      await axios.delete(`http://localhost:5000/products/${id}`, {
-        withCredentials: true, // 🟢 penting untuk kirim cookie ke backend
-      });
-
-      // Hapus produk dari state lokal agar tabel langsung update
-      setProducts(products.filter((p) => p.id !== id));
-    } catch (err) {
-      console.error("Gagal menghapus produk:", err);
-      alert("Gagal menghapus produk. Coba lagi.");
+    if (window.confirm("Yakin ingin menghapus produk ini?")) {
+      try {
+        await axios.delete(`http://localhost:5000/products/${id}`, {
+          withCredentials: true,
+        });
+        setProducts(products.filter((p) => p.id !== id));
+      } catch (err) {
+        console.error("Gagal menghapus produk:", err);
+        alert("Gagal menghapus produk. Coba lagi.");
+      }
     }
-  }
-};
-
+  };
 
   // 🔹 Buka modal tambah/edit
   const openModal = (product = null) => {
@@ -107,8 +108,8 @@ export default function SellerProduk() {
 
   return (
     <div className="flex h-screen bg-stone-100 font-[Inter]">
-            {/* Ganti seluruh aside dengan ini */}
-            <SidebarSeller onLogout={handleLogout} />
+      {/* === SIDEBAR === */}
+      <SidebarSeller onLogout={handleLogout} />
 
       {/* === KONTEN UTAMA === */}
       <div className="flex-1 p-8">
@@ -127,6 +128,7 @@ export default function SellerProduk() {
           </button>
         </div>
 
+        {/* === TABEL PRODUK === */}
         <div className="bg-white rounded-2xl shadow-md p-6">
           <table className="w-full border-collapse text-left">
             <thead>
@@ -145,12 +147,14 @@ export default function SellerProduk() {
                   <tr key={index} className="border-b hover:bg-[#fdfaf6]">
                     <td className="py-3 px-4">{p.name}</td>
                     <td className="py-3 px-4">{p.jenis}</td>
-                    <td className="py-3 px-4">Rp {p.harga?.toLocaleString()}</td>
+                    <td className="py-3 px-4">
+                      Rp {p.harga?.toLocaleString()}
+                    </td>
                     <td className="py-3 px-4">{p.deskripsi}</td>
                     <td className="py-3 px-4">
                       {p.foto ? (
                         <img
-                          src={p.foto}
+                          src={`http://localhost:5000${p.foto}`}
                           alt={p.name}
                           className="w-16 h-16 object-cover rounded-lg"
                         />
@@ -204,7 +208,9 @@ export default function SellerProduk() {
                 <input
                   key={field}
                   type={field === "harga" ? "number" : "text"}
-                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                  placeholder={
+                    field.charAt(0).toUpperCase() + field.slice(1)
+                  }
                   className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-[#3E2C20]/30"
                   value={formData[field]}
                   onChange={(e) =>

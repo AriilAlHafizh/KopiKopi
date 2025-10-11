@@ -119,24 +119,41 @@ export const updateProduct = async (req, res) => {
     });
     if (!product) return res.status(404).json({ msg: "Data tidak ditemukan" });
 
-    const { name, jenis, harga, deskripsi, foto } = req.body;
+    const { name, jenis, harga, deskripsi } = req.body;
+    let foto = product.foto; // Default: pertahankan foto lama
+
+    // ✅ LOGIKA BARU UNTUK FOTO
+    if (req.file) {
+      // Jika ada file baru di-upload, gunakan path baru
+      foto = `/uploads/${req.file.filename}`;
+
+      // TODO: Optional - Hapus file lama dari server jika foto lama ada
+      // Misalnya: fs.unlinkSync(path.join(__dirname, '..', 'public', product.foto)); 
+    } else if (req.body.clearFoto === 'true') {
+      // Jika Anda ingin menambahkan mekanisme untuk menghapus foto
+      foto = null;
+    }
+    // Akhir LOGIKA BARU
+
+    const updateData = { name, jenis, harga, deskripsi, foto };
+    let canUpdate = false;
 
     if (req.role === "admin") {
-      await Products.update(
-        { name, jenis, harga, deskripsi, foto },
-        { where: { id: product.id } }
-      );
+      canUpdate = true;
     } else if (req.role === "seller") {
-      if (req.userId !== product.userId)
+      if (req.userId !== product.userId) {
         return res.status(403).json({ msg: "Akses terlarang" });
-
-      await Products.update(
-        { name, jenis, harga, deskripsi, foto },
-        { where: { id: product.id } }
-      );
+      }
+      canUpdate = true;
     }
 
-    res.status(200).json({ msg: "Product Updated..." });
+    if (canUpdate) {
+      await Products.update(updateData, { where: { id: product.id } });
+      res.status(200).json({ msg: "Product Updated...", fotoUrl: foto }); // Tambahkan fotoUrl di respons
+    } else {
+      return res.status(403).json({ msg: "Akses ditolak" });
+    }
+
   } catch (error) {
     res.status(500).json({ msg: error.message });
   }
