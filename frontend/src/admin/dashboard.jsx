@@ -1,164 +1,170 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+
+// ✨ BARU: Ikon SVG untuk tampilan yang lebih bersih dan profesional
+const Icons = {
+  dashboard: <svg xmlns="http://www.w.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" /><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" /></svg>,
+  users: <svg xmlns="http://www.w.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" /></svg>,
+  products: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>,
+  customers: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" /></svg>,
+  promotions: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 20a10 10 0 110-20 10 10 0 010 20zm1-5a1 1 0 00-2 0v2a1 1 0 002 0v-2zM9 4a1 1 0 011-1h.01a1 1 0 010 2H10a1 1 0 01-1-1z" /></svg>,
+  settings: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-1.57 1.996A1.532 1.532 0 013 7.054c-1.56.38-1.56 2.6 0 2.98.63.153 1.034 1.034.948 2.286-.836 1.372.734 2.942 1.996 1.57A1.532 1.532 0 017.054 17c.38 1.56 2.6 1.56 2.98 0a1.532 1.532 0 012.286-.948c1.372.836 2.942-.734 1.57-1.996A1.532 1.532 0 0117 12.946c1.56-.38 1.56-2.6 0-2.98a1.532 1.532 0 01-.948-2.286c.836-1.372-.734-2.942-1.996-1.57A1.532 1.532 0 0112.946 3c-.38-.153-1.034-1.034-2.286-.948zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" /></svg>,
+  logout: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" /></svg>
+};
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    users: 0,
+    products: 0,
+    pelanggan: 0,
+    promosi: 0,
+  });
 
   const handleLogout = async () => {
     await logout();
     navigate("/login");
   };
 
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [userRes, productRes, pelangganRes, promosiRes] = await Promise.all([
+          axios.get("http://localhost:5000/users").catch(() => ({ data: [] })),
+          axios.get("http://localhost:5000/products"),
+          axios.get("http://localhost:5000/pelanggans").catch(() => ({ data: [] })),
+          axios.get("http://localhost:5000/promosi").catch(() => ({ data: [] })),
+        ]);
+
+        setStats({
+          users: userRes.data.length,
+          products: productRes.data.length,
+          pelanggan: pelangganRes.data.length,
+          promosi: promosiRes.data.length,
+        });
+      } catch (err) {
+        console.error("Gagal memuat statistik:", err);
+      }
+    };
+
+    fetchStats();
+  }, []);
+  
+  // 🎨 Data navigasi dengan ikon SVG
+  const navItems = [
+    { name: "Dashboard", path: "/admin/dashboard", icon: Icons.dashboard },
+    { name: "Pengguna", path: "/admin/usertable/UserList", icon: Icons.users },
+    { name: "Produk Kopi", path: "/admin/produk/ProduksList", icon: Icons.products },
+    { name: "Pelanggan", path: "/admin/pelanggan", icon: Icons.customers },
+    { name: "Promosi", path: "/admin/promosi", icon: Icons.promotions },
+    { name: "Pengaturan", path: "/admin/pengaturan", icon: Icons.settings },
+  ];
+
   return (
-    <div className="flex h-screen bg-gray-100 font-[Inter]">
-      {/* Sidebar */}
-      <aside className="w-64 bg-slate-800 text-gray-300 flex flex-col">
-        {/* Logo Section */}
-        <div className="h-20 flex items-center justify-center px-4 border-b border-slate-700">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8 text-indigo-400 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 6.253v11.494m-9-5.747h18M5.45 7.427L3.625 5.602m14.95 
-              1.825L20.375 5.602M5.45 16.573L3.625 18.398m14.95-1.825L20.375 
-              18.398M9 4.134l-1.125-1.125M15 4.134l1.125-1.125M9 
-              19.866l-1.125 1.125M15 19.866l1.125 1.125"
-            />
-          </svg>
-          <span className="text-white text-xl font-bold">KopiKita Admin</span>
+    // 🎨 Latar belakang utama dengan warna hangat yang lembut
+    <div className="flex h-screen bg-stone-100 font-[Inter]">
+      {/* SIDEBAR */}
+      {/* 🎨 Sidebar dengan gradien tema kopi yang Anda minta */}
+      <aside className="w-64 bg-gradient-to-br from-[#542E1D] to-[#A0583C] text-stone-200 flex flex-col shadow-2xl">
+        <div className="h-20 flex items-center justify-center px-4 border-b border-white/10">
+        <img
+        src="/src/assets/image/LOGO.png"
+        alt="Hafizh Kopi Logo"
+        className="h-10"
+        
+          />
         </div>
 
-        {/* Sidebar Menu */}
-        <nav className="flex-1 px-4 py-6 space-y-2 text-sm">
-          {[
-            { name: "Dashboard", path: "/admin/dashboard", icon: "📊" },
-            { name: "Pengguna", path: "/admin/usertable/UserList", icon: "👥" },
-            { name: "Produk Kopi", path: "/admin/produk", icon: "☕" },
-            { name: "Pelanggan", path: "/admin/pelanggan", icon: "🛍️" },
-            { name: "Promosi", path: "/admin/promosi", icon: "📢" },
-            { name: "Pengaturan", path: "/admin/pengaturan", icon: "⚙️" },
-          ].map((item, i) => (
+
+        <nav className="flex-1 px-4 py-6 space-y-2">
+          {navItems.map((item, i) => (
             <NavLink
               key={i}
               to={item.path}
+              end={item.path === "/admin/dashboard"}
               className={({ isActive }) =>
-                `flex items-center px-4 py-2.5 rounded-lg transition-colors duration-200 ${
+                `flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group ${
                   isActive
-                    ? "bg-slate-700 text-white font-semibold"
-                    : "hover:bg-slate-700 hover:text-white"
+                    ? "bg-white/20 text-white font-semibold shadow-inner"
+                    : "hover:bg-white/10"
                 }`
               }
             >
-              <span className="mr-3 text-lg">{item.icon}</span>
+              <span className="mr-3">{item.icon}</span>
               {item.name}
             </NavLink>
           ))}
         </nav>
 
-        {/* Logout Button */}
-        <div className="px-4 py-4 border-t border-slate-700">
-          <button
-            onClick={handleLogout}
-            className="flex items-center justify-center w-full px-4 py-2.5 rounded-lg text-sm text-gray-200 bg-slate-700 hover:bg-slate-600 transition"
-          >
-            <svg
-              className="h-5 w-5 mr-2"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17 16L21 12M21 12L17 8M21 12H9M7 20H5C3.9 20 3 19.1 3 18V6C3 4.9 3.9 4 5 4H7"
-              />
-            </svg>
-            Keluar
-          </button>
-        </div>
+        <div className="px-6 py-6 border-t border-white/10">
+  <button
+    onClick={handleLogout}
+    className="flex items-center justify-center w-full px-4 py-2.5 rounded-lg text-sm font-medium bg-white/10 text-gray-200 hover:bg-red-500 hover:text-white transition-all duration-200 shadow-sm hover:shadow-md"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-5 h-5"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+    >
+      <path
+        fillRule="evenodd"
+        d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z"
+        clipRule="evenodd"
+      />
+    </svg>
+    <span className="ml-2">Keluar</span>
+  </button>
+</div>
+
       </aside>
 
-      {/* MAIN CONTENT */}
+      {/* KONTEN UTAMA */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-white shadow-sm">
+        {/* 🎨 Header dengan sapaan pengguna dan avatar */}
+        <header className="bg-white border-b border-stone-200">
           <div className="mx-auto px-6 py-4 flex justify-between items-center">
-            <div className="relative w-full max-w-md">
-              <input
-                type="text"
-                placeholder="Cari data, produk, atau pengguna..."
-                className="w-full bg-gray-100 border border-transparent rounded-lg py-2 pl-10 pr-4 
-                focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white"
-              />
-              <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-
-            <div className="flex items-center space-x-5">
-              <button className="text-gray-500 hover:text-gray-800 relative">
-                <svg
-                  className="h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 
-                    0118 14.158V11a6 6 0 10-12 0v3.159c0 
-                    .538-.214 1.055-.595 1.436L4 17h5m6 
-                    0v1a3 3 0 11-6 0v-1m6 0H9"
-                  />
-                </svg>
-                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white"></span>
-              </button>
-
-              <div className="flex items-center space-x-3">
-                <img
-                  src="https://i.pravatar.cc/40?u=admin"
-                  alt="Admin Avatar"
-                  className="h-10 w-10 rounded-full object-cover"
-                />
-                <div>
-                  <p className="font-semibold text-gray-800 text-sm">
-                    {user?.name || "Admin Utama"}
-                  </p>
-                  <p className="text-xs text-gray-500">{user?.role || "admin"}</p>
-                </div>
+            <h2 className="text-2xl font-semibold text-stone-800">Dashboard</h2>
+            <div className="flex items-center space-x-3">
+              <span className="text-stone-600">
+                Halo, <span className="font-semibold">{user?.name || "Admin"}</span>!
+              </span>
+              <div className="w-10 h-10 bg-amber-200 text-amber-800 rounded-full flex items-center justify-center font-bold text-lg">
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
               </div>
             </div>
           </div>
         </header>
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto">
           <div className="mx-auto px-6 py-8">
-            <Outlet />
+            {/* 🎨 Kartu Statistik dengan ikon dan efek hover yang ditingkatkan */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+              {[
+                { title: 'Total Pengguna', value: stats.users, icon: Icons.users, color: 'sky' },
+                { title: 'Total Produk Kopi', value: stats.products, icon: Icons.products, color: 'amber' },
+                { title: 'Total Pelanggan', value: stats.pelanggan, icon: Icons.customers, color: 'emerald' },
+                { title: 'Total Promosi', value: stats.promosi, icon: Icons.promotions, color: 'rose' },
+              ].map((stat, i) => (
+                <div key={i} className={`bg-white p-6 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center space-x-4 border-l-4 border-${stat.color}-500`}>
+                  <div className={`bg-${stat.color}-100 p-3 rounded-full text-${stat.color}-600`}>
+                    {stat.icon}
+                  </div>
+                  <div>
+                    <div className="text-stone-500 text-sm font-medium">{stat.title}</div>
+                    <div className={`text-3xl font-bold text-${stat.color}-600 mt-1`}>{stat.value}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* 🎨 Wrapper untuk Outlet agar halaman anak konsisten */}
+            <div className="bg-white p-6 rounded-lg shadow-md">
+                <Outlet />
+            </div>
           </div>
         </main>
       </div>

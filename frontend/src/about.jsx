@@ -1,61 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom'; // Diperlukan untuk navigasi di navbar
 import { motion } from 'framer-motion';
+import Navbar from './components/Navbar';
 
 function App() {
   return (
     <div className="font-[Poppins,sans-serif]">
-  {/* Header */}
-  <header className="absolute top-0 left-0 w-full z-20 bg-transparent">
-    <nav className="max-w-7xl mx-auto py-6 flex justify-between items-center text-white">
-      {/* Logo */}
-      <Link to="/">
-        <img
-          src="/src/assets/image/LOGO.png"
-          alt="Hafizh Kopi Logo"
-          className="h-10"
-        />
-      </Link>
-
-      {/* Menu Navigasi */}
-      <div className="hidden md:flex space-x-8 text-base font-medium ml-16">
-        <Link to="/" className="hover:text-yellow-400 transition">Home</Link>
-        <Link to="/About" className="hover:text-yellow-400 transition">About Us</Link>
-        <Link to="/Shop" className="hover:text-yellow-400 transition">Shop</Link>
-        <Link to="/Blog" className="hover:text-yellow-400 transition">Blog</Link>
-        <Link to="/Contact" className="hover:text-yellow-400 transition">Contact Us</Link>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        {/* Kotak Pencarian */}
-        <div className="flex items-center">
-          <input
-            type="text"
-            placeholder="Cari kopi.."
-            className="px-4 py-2 w-36 sm:w-35 text-gray-900 bg-white rounded-l-xl focus:outline-none text-sm"
-          />
-          <button
-            className="bg-black text-white px-3 py-2 rounded-r-xl h-full hover:bg-gray-800 transition"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Tombol Login */}
-        <Link
-          to="/login"
-          className="bg-[#A0583C] text-white font-semibold py-2 px-6 rounded-xl shadow-lg hover:bg-amber-700 transition"
-        >
-          Login
-        </Link>
-      </div>
-    </nav>
-  </header>
+          {/* ✅ Navbar yang sudah kamu buat */}
+          <Navbar variant="transparent" />
 
   {/* Hero Section */}
   <section className="bg-gradient-to-br from-[#542E1D] to-[#A0583C] py-40 relative overflow-hidden">

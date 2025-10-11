@@ -9,6 +9,30 @@ const FacebookIcon = (props) => (
         <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
     </svg>
 );
+
+//  Tambahan: Ikon Keranjang
+const CartIcon = () => (
+  <button
+    className="fixed top-6 right-6 bg-[#B27F5A] hover:bg-[#A36C4D] text-white rounded-full p-3 shadow-lg transition-transform transform hover:scale-110 z-50"
+    aria-label="Keranjang"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-6 h-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.293 6.293A1 1 0 007 21h10a1 1 0 00.993-.883L19 13M9 21a2 2 0 11-4 0m10 0a2 2 0 11-4 0"
+      />
+    </svg>
+  </button>
+);
+
 const WaterDropIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500 mx-auto">
         <path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8z"></path>
@@ -90,6 +114,7 @@ export default function Dashboard() {
     return (
         <div className="bg-[#F9F6EE] font-sans min-h-screen overflow-hidden">
 
+        
             {/* Bagian 1: Hero Section */}
             <div
                 className="h-[100vh] flex flex-col bg-cover bg-center relative"

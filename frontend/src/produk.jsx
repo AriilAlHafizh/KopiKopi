@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // ✅ tambahkan useNavigate
+import Navbar from './components/Navbar.jsx';
 
-
-export default function Checkout() {
+export default function Produk() {
   const [quantity, setQuantity] = useState(1);
   const pricePerKg = 50000;
+
+  // ✅ Tambahkan useNavigate agar bisa pindah halaman ke checkout
+  const navigate = useNavigate();
 
   const updateSubtotal = () => {
     return `Rp ${(quantity * pricePerKg).toLocaleString("id-ID")}`;
@@ -19,10 +22,16 @@ export default function Checkout() {
 
   const buyNow = () => {
     const total = quantity * pricePerKg;
-    const formattedTotal = total.toLocaleString("id-ID");
-    if (window.confirm(`Anda akan membeli ${quantity} kg Kopi Robusta dengan total Rp ${formattedTotal}. Lanjutkan?`)) {
-      alert("Mengarahkan ke halaman pembayaran...");
-    }
+
+    // ✅ Arahkan ke halaman checkout dengan membawa data produk
+    navigate("/checkout", {
+      state: {
+        productName: "Kopi Robusta",
+        price: pricePerKg,
+        quantity: quantity,
+        total: total,
+      },
+    });
   };
 
   const handleSubscribe = (e) => {
@@ -33,100 +42,43 @@ export default function Checkout() {
   };
 
   return (
-    <div className="font-sans bg-gray-100 text-gray-800 leading-relaxed">
-      {/* HEADER */}
-      <header className="bg-gradient-to-br from-[#542E1D] to-[#A0583C] text-white shadow-md">
-        <nav className="max-w-7xl mx-auto py-6 flex justify-between items-center text-white">
-          {/* Logo */}
-          <Link to="/">
-            <img
-              src="/src/assets/image/LOGO.png"
-              alt="Hafizh Kopi Logo"
-              className="h-10"
-            />
-          </Link>
-
-          {/* Menu Navigasi */}
-          <div className="hidden md:flex space-x-8 text-base font-medium ml-16">
-            <Link to="/" className="hover:text-yellow-400 transition">Home</Link>
-            <Link to="/About" className="hover:text-yellow-400 transition">About Us</Link>
-            <Link to="/Shop" className="hover:text-yellow-400 transition">Shop</Link>
-            <Link to="/Blog" className="hover:text-yellow-400 transition">Blog</Link>
-            <Link to="/Contact" className="hover:text-yellow-400 transition">Contact Us</Link>
-          </div>
-
-          {/* Search + Login */}
-          <div className="flex items-center space-x-2">
-            {/* Kotak Pencarian */}
-            <div className="flex items-center">
-              <input
-                type="text"
-                placeholder="Cari kopi.."
-                className="px-4 py-2 w-36 sm:w-40 text-gray-900 bg-white rounded-l-xl focus:outline-none text-sm"
-              />
-              <button className="bg-black text-white px-3 py-2 rounded-r-xl h-full hover:bg-gray-800 transition">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Tombol Login */}
-            <Link
-              to="/login"
-              className="bg-[#A0583C] text-white font-semibold py-2 px-6 rounded-xl shadow-lg hover:bg-amber-700 transition"
-            >
-              Login
-            </Link>
-          </div>
-        </nav>
-      </header>
+    <div className="font-[Poppins,sans-serif]">
+      {/* ✅ Navbar yang sudah kamu buat */}
+      <Navbar variant="brown" />
 
       {/* MAIN */}
-      <main className="max-w-6xl mx-auto px-5 py-10 flex flex-col md:flex-row gap-10">
+      <main className="max-w-6xl mx-auto px-5 py-10 flex flex-col md:flex-row gap-10 pt-24">
         {/* LEFT */}
-       <section className="flex-1 bg-white rounded-xl p-8 shadow-md">
-            <h1 className="text-3xl md:text-4xl font-bold mb-5">ROBUSTA</h1>
-            <div className="mb-8">
-              <p className="text-gray-600 text-justify mb-6">
-                Kopi Robusta adalah salah satu jenis kopi yang paling banyak dibudidayakan di seluruh wilayah Arabika. Aroma biji Kopi Robusta memiliki rasa yang lebih kuat, pahit, dan beraroma tanah atau kayu dibandingkan Arabika. Karakteristik ini muncul akibat kadar asam klorogenat yang lebih tinggi. Keunggulan Robusta adalah kemampuannya memberikan efek aftertaden yang lebih kuat dan membantu tanaman lebih tahan terhadap hama. Kopi Robusta dapat dibudidayakan di daerah dataran rendah hingga menengah (200-800 meter di atas permukaan laut) dengan suhu sedang (24-30 derajat Celsius). Robusta memiliki kandungan kafein yang jauh lebih tinggi dibanding biji Arabika. Karena karakter rasa yang tegas dan body yang pekat, Robusta sering digunakan sebagai bahan dasar espresso blend, kopi instan, dan minuman kopi dengan cita rasa kuat.
+        <section className="flex-1 bg-white rounded-xl p-8 shadow-md">
+          <h1 className="text-3xl md:text-4xl font-bold mb-5">ROBUSTA</h1>
+          <div className="mb-8">
+            <p className="text-gray-600 text-justify mb-6">
+              Kopi Robusta adalah salah satu jenis kopi yang paling banyak dibudidayakan di seluruh wilayah Arabika. Aroma biji Kopi Robusta memiliki rasa yang lebih kuat, pahit, dan beraroma tanah atau kayu dibandingkan Arabika. Karakteristik ini muncul akibat kadar asam klorogenat yang lebih tinggi. Keunggulan Robusta adalah kemampuannya memberikan efek aftertaden yang lebih kuat dan membantu tanaman lebih tahan terhadap hama. Kopi Robusta dapat dibudidayakan di daerah dataran rendah hingga menengah (200-800 meter di atas permukaan laut) dengan suhu sedang (24-30 derajat Celsius). Robusta memiliki kandungan kafein yang jauh lebih tinggi dibanding biji Arabika. Karena karakter rasa yang tegas dan body yang pekat, Robusta sering digunakan sebagai bahan dasar espresso blend, kopi instan, dan minuman kopi dengan cita rasa kuat.
+            </p>
+            <hr className="border-t border-gray-200 my-5" />
+            <h2 className="text-2xl font-bold text-[#5D4037]">PT. HAFIZH KOPI</h2>
+            <hr className="border-t border-gray-200 my-5" />
+            <p className="text-2xl font-bold text-[rgb(210,105,30)]">Rp 50.000/kg</p>
+            <hr className="border-t border-gray-200 my-5" />
+            <div>
+              <h3 className="font-bold mb-2">Catatan</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Jangan ragu untuk memilih kopi terbaik ...
               </p>
-              <hr className="border-t border-gray-200 my-5" />
-              <h2 className="text-2xl font-bold text-[#5D4037]">PT. HAFIZH KOPI</h2>
-              <hr className="border-t border-gray-200 my-5" />
-              <p className="text-2xl font-bold text-[rgb(210,105,30)]">Rp 50.000/kg</p>
-              <hr className="border-t border-gray-200 my-5" />
-              <div>
-                <h3 className="font-bold mb-2">Catatan</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  Jangan ragu untuk memilih kopi terbaik ...
-                </p>
-              </div>
             </div>
+          </div>
 
-            {/* Card Gambar Produk (Lebar dan elegan) */}
-            <div className="flex justify-center mt-8">
-              <div className="w-full max-w-lg h-80 rounded-2xl overflow-hidden shadow-lg bg-gray-100 flex items-center justify-center">
-                <img
-                  src="/src/assets/image/berita.jpg"
-                  alt="kopi"
-                  className="w-full h-full object-cover object-center transition-transform duration-500 ease-in-out hover:scale-105"
-                />
-              </div>
+          {/* Card Gambar Produk */}
+          <div className="flex justify-center mt-8">
+            <div className="w-full max-w-lg h-80 rounded-2xl overflow-hidden shadow-lg bg-gray-100 flex items-center justify-center">
+              <img
+                src="/src/assets/image/berita.jpg"
+                alt="kopi"
+                className="w-full h-full object-cover object-center transition-transform duration-500 ease-in-out hover:scale-105"
+              />
             </div>
-          </section>
-
+          </div>
+        </section>
 
         {/* RIGHT */}
         <aside className="w-full md:w-96">

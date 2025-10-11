@@ -1,56 +1,67 @@
-import React from 'react';
-import { useAuth } from '../context/AuthContext'; // Sesuaikan path jika perlu
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import SidebarSeller from "../components/SidebarSeller";
 
 export default function SellerDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    totalProduk: 0,
+    totalPenjualan: 0,
+    rating: 4.8,
+    stokRendah: 0,
+  });
+  const [produkList, setProdukList] = useState([]);
+  const [pembelian, setPembelian] = useState([]);
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login'); // Arahkan ke halaman login setelah logout
+    navigate("/login");
   };
 
-     return (
-    <div className="text-gray-800 bg-[#f9f6f1] min-h-screen flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-[#3E2C20] text-[#f3eee7] flex flex-col">
-        <div className="p-6 text-2xl font-bold tracking-wide border-b border-[#5a4334] flex justify-between items-center">
-          <span>☕ KopiKu Seller</span>
-          <button
-            onClick={handleLogout}
-            title="Logout"
-            className="text-xs bg-[#5a4334] hover:bg-[#7a5e48] px-2 py-1 rounded-lg"
-          >
-            Keluar
-          </button>
-        </div>
+  useEffect(() => {
+    // 🔹 Ambil data dummy (bisa diganti dengan API real)
+    const fetchData = async () => {
+      try {
+        const produkRes = await axios.get("http://localhost:5000/products");
+        const orderRes = await axios.get("http://localhost:5000/orders");
+        const lowStock = produkRes.data.filter((p) => p.stok < 5).length;
 
-        <nav className="flex-1 px-4 py-6 space-y-3 text-sm">
-          <a href="#" className="block py-2 px-3 rounded-lg bg-[#5a4334]">
-            Dashboard
-          </a>
-          <a href="#" className="block py-2 px-3 rounded-lg hover:bg-[#5a4334]/60">
-            Produk Saya
-          </a>
-          <a href="#" className="block py-2 px-3 rounded-lg hover:bg-[#5a4334]/60">
-            Pesanan
-          </a>
-          <a href="#" className="block py-2 px-3 rounded-lg hover:bg-[#5a4334]/60">
-            Pendapatan
-          </a>
-          <a href="#" className="block py-2 px-3 rounded-lg hover:bg-[#5a4334]/60">
-            Ulasan
-          </a>
-          <a href="#" className="block py-2 px-3 rounded-lg hover:bg-[#5a4334]/60">
-            Pengaturan Toko
-          </a>
-        </nav>
+        setStats({
+          totalProduk: produkRes.data.length,
+          totalPenjualan: orderRes.data.length,
+          rating: 4.8,
+          stokRendah: lowStock,
+        });
 
-        <div className="p-4 border-t border-[#5a4334] text-xs text-center">
-          © 2025 KopiKu
-        </div>
-      </aside>
+        setProdukList(produkRes.data.slice(0, 5));
+        setPembelian(orderRes.data.slice(0, 5));
+      } catch (err) {
+        console.error("Gagal mengambil data dashboard:", err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // 🔹 Data contoh untuk grafik
+  const salesData = [
+    { day: "Sen", total: 2000000 },
+    { day: "Sel", total: 3200000 },
+    { day: "Rab", total: 2800000 },
+    { day: "Kam", total: 4000000 },
+    { day: "Jum", total: 3500000 },
+    { day: "Sab", total: 2200000 },
+    { day: "Min", total: 3000000 },
+  ];
+
+  return (
+    <div className="flex h-screen bg-stone-100 font-[Inter]">
+        {/* Ganti seluruh aside dengan ini */}
+        <SidebarSeller onLogout={handleLogout} />
+
 
       {/* Main Content */}
       <main className="flex-1 p-8 overflow-y-auto">
@@ -74,7 +85,6 @@ export default function SellerDashboard() {
           </div>
         </div>
 
-        {/* Seller Info */}
         <div className="bg-white shadow-md rounded-2xl p-6 mb-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <img
@@ -99,50 +109,41 @@ export default function SellerDashboard() {
           </button>
         </div>
 
-        {/* Stats */}
+        {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
           {[
-            {
-              title: "Pendapatan Bulan Ini",
-              value: "Rp 12.540.000",
-              color: "text-green-600",
-              desc: "▲ +8% dari bulan lalu",
-            },
-            {
-              title: "Produk Aktif",
-              value: "36",
-              color: "text-blue-600",
-              desc: "3 produk baru minggu ini",
-            },
-            {
-              title: "Pesanan Diproses",
-              value: "18",
-              color: "text-orange-500",
-              desc: "2 pesanan baru hari ini",
-            },
-            {
-              title: "Ulasan Baru",
-              value: "9",
-              color: "text-green-600",
-              desc: "Pelanggan puas meningkat",
-            },
+            { title: "Total Produk", value: stats.totalProduk, color: "text-blue-600", desc: "Produk aktif di etalase" },
+            { title: "Total Penjualan", value: stats.totalPenjualan, color: "text-green-600", desc: "Transaksi sukses bulan ini" },
+            { title: "Rating Toko", value: stats.rating, color: "text-yellow-500", desc: "Berdasarkan ulasan pelanggan" },
+            { title: "Stok Rendah", value: stats.stokRendah, color: "text-red-500", desc: "Perlu restock segera" },
           ].map((item, index) => (
-            <div
-              key={index}
-              className="bg-[#fffdf9] border border-[#ede5dc] p-5 rounded-xl shadow-sm"
-            >
+            <div key={index} className="bg-white p-5 rounded-xl shadow hover:shadow-md transition">
               <h3 className="text-gray-500 text-sm">{item.title}</h3>
-              <p className="text-2xl font-semibold mt-2">{item.value}</p>
-              <p className={`${item.color} text-xs mt-1`}>{item.desc}</p>
+              <p className={`text-2xl font-semibold mt-2 ${item.color}`}>{item.value}</p>
+              <p className="text-gray-400 text-xs mt-1">{item.desc}</p>
             </div>
           ))}
         </div>
 
-        {/* Tabel Produk */}
+        {/* Grafik Penjualan Mingguan */}
+        <div className="bg-white p-6 rounded-2xl shadow mb-10">
+          <h3 className="font-semibold text-lg mb-4">📈 Statistik Penjualan Minggu Ini</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={salesData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip formatter={(val) => `Rp ${val.toLocaleString()}`} />
+              <Line type="monotone" dataKey="total" stroke="#3E2C20" strokeWidth={3} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Produk Terbaru */}
         <div className="bg-white rounded-2xl shadow-md p-6 mb-10">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold text-lg">Produk Terbaru</h3>
-            <a href="#" className="text-[#3E2C20] text-sm hover:underline">
+            <h3 className="font-semibold text-lg">🛍️ Produk Terbaru</h3>
+            <a href="/seller/produk/ProdukList" className="text-[#3E2C20] text-sm hover:underline">
               Lihat semua
             </a>
           </div>
@@ -154,37 +155,18 @@ export default function SellerDashboard() {
                   <th className="py-3 px-4">Harga</th>
                   <th className="py-3 px-4">Stok</th>
                   <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                {[
-                  {
-                    nama: "Kopi Gayo Premium",
-                    harga: "Rp 120.000",
-                    stok: "32",
-                    status: "Aktif",
-                    color: "text-green-600",
-                  },
-                  {
-                    nama: "Kopi Toraja Asli",
-                    harga: "Rp 98.000",
-                    stok: "14",
-                    status: "Habis",
-                    color: "text-orange-500",
-                  },
-                ].map((p, index) => (
+                {produkList.map((p, index) => (
                   <tr key={index} className="border-b hover:bg-[#fdfaf6]">
-                    <td className="py-3 px-4">{p.nama}</td>
-                    <td className="py-3 px-4">{p.harga}</td>
-                    <td className="py-3 px-4">{p.stok}</td>
+                    <td className="py-3 px-4">{p.nama || p.name}</td>
+                    <td className="py-3 px-4">Rp {p.harga?.toLocaleString() || "—"}</td>
+                    <td className="py-3 px-4">{p.stok || 0}</td>
                     <td className="py-3 px-4">
-                      <span className={`${p.color} text-sm`}>{p.status}</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <button className="text-sm text-blue-600 hover:underline">
-                        Edit
-                      </button>
+                      <span className={`text-sm ${p.stok > 0 ? "text-green-600" : "text-red-500"}`}>
+                        {p.stok > 0 ? "Aktif" : "Habis"}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -193,25 +175,50 @@ export default function SellerDashboard() {
           </div>
         </div>
 
-        {/* Aktivitas Terbaru */}
+        {/* Pembelian Terbaru */}
+        <div className="bg-white rounded-2xl shadow-md p-6 mb-10">
+          <h3 className="font-semibold text-lg mb-4">🧾 Pembelian Terbaru</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#f3eee7] text-gray-700">
+                  <th className="py-3 px-4">Pelanggan</th>
+                  <th className="py-3 px-4">Produk</th>
+                  <th className="py-3 px-4">Total</th>
+                  <th className="py-3 px-4">Tanggal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pembelian.map((o, i) => (
+                  <tr key={i} className="border-b hover:bg-[#fdfaf6]">
+                    <td className="py-3 px-4">{o.customer || "Pelanggan"}</td>
+                    <td className="py-3 px-4">{o.product || "Produk Kopi"}</td>
+                    <td className="py-3 px-4">Rp {o.total?.toLocaleString() || "0"}</td>
+                    <td className="py-3 px-4">{new Date(o.date || Date.now()).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Insight Toko */}
         <div className="bg-white rounded-2xl shadow-md p-6">
-          <h3 className="font-semibold text-lg mb-4">Aktivitas Terbaru</h3>
-          <ul className="space-y-3 text-sm">
-            <li className="flex justify-between border-b pb-2">
-              <span>
-                Pelanggan <b>Andi</b> memesan <b>Kopi Gayo Premium</b>
-              </span>
-              <span className="text-gray-400">2 jam lalu</span>
-            </li>
-            <li className="flex justify-between border-b pb-2">
-              <span>Produk <b>Kopi Toraja</b> stok diperbarui</span>
-              <span className="text-gray-400">5 jam lalu</span>
-            </li>
-            <li className="flex justify-between">
-              <span>Pelanggan <b>Rina</b> memberikan rating ⭐⭐⭐⭐⭐</span>
-              <span className="text-gray-400">1 hari lalu</span>
-            </li>
-          </ul>
+          <h3 className="font-semibold text-lg mb-4">💡 Insight Penjualan</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <h4 className="font-medium text-gray-600 mb-1">Produk Terlaris</h4>
+              <p className="font-semibold text-[#3E2C20]">Kopi Gayo Premium</p>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-600 mb-1">Pelanggan Aktif</h4>
+              <p className="font-semibold text-[#3E2C20]">123 pelanggan</p>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-600 mb-1">Total Omzet Bulan Ini</h4>
+              <p className="font-semibold text-[#3E2C20]">Rp 12.540.000</p>
+            </div>
+          </div>
         </div>
       </main>
     </div>

@@ -73,3 +73,5 @@ app.use(authRoute);
 app.listen(process.env.APP_PORT, () => {
     console.log('Server Up and Running...')
 });
+
+app.use("/uploads", express.static("public/uploads"));
